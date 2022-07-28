@@ -1,7 +1,12 @@
 use std::collections::HashMap;
+use std::fs;
+use std::error::Error;
 
-/// An entry in a GTF or GFF-Version 2 file
+/// An entry in a GTF or GFF-Version 2 file: https://uswest.ensembl.org/info/website/upload/gff.html
+#[derive(Debug)]
 pub struct Entry {
+    /// The number that the gene is in the file
+    gene_number: u32,
     /// seqname - name of the chromosome or scaffold; chromosome names can be given with or
     /// without the 'chr' prefix. Important note: the seqname must be one used within Ensembl,
     /// i.e. a standard chromosome name or an Ensembl identifier such as a scaffold ID,
@@ -24,4 +29,19 @@ pub struct Entry {
     frame: u32,
     /// attribute - A semicolon-separated list of tag-value pairs, providing additional information about each feature.
     attribute: HashMap<String, String>,
+}
+
+pub fn read_gtk(path: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
+    let raw_data = fs::read_to_string(path)?;
+    let lines_str = raw_data.lines();
+    let mut lines = Vec::new();
+    for line in lines_str {
+        let elements = line.split("\t");
+        let mut row = Vec::new();
+        for item in elements {
+            row.push(item.to_owned());
+        }
+        lines.push(row);
+    }
+    Ok(lines)
 }
