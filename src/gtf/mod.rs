@@ -1,26 +1,40 @@
-use log::{debug, info};
-use std::fs;
+use log::{
+    debug,
+    error,
+    info,
+};
 use std::error::Error;
+use std::fs;
+use std::io::{self, BufRead};
 
 use crate::segment::{Segment, SegmentType};
 
 pub fn read_gtf(path: &str) -> Result<Vec<Segment>, Box<dyn Error>> {
-    info!("about to read {}", path);
-    let raw_data = fs::read_to_string(path)?;
-    info!("finished reading {} into memory, starting parsing", path);
-    let lines_str = raw_data.lines();
+    info!("reading and parsing {}", path);
+    let file_ptr = fs::File::open(path)?;
     let mut segments = Vec::new();
     let mut i = 0;
-    for line in lines_str {
+    let mut exon_count = 0;
+    for line_result in io::BufReader::new(file_ptr).lines() {
+        let line = match line_result {
+            Ok(v) => v,
+            Err(e) => {
+                error!("failed to read a line due to: {}", e);
+                continue;
+            }
+        };
         if i < 20 {
             println!("{}", line);
         }
-        if let Some(segment) = parse_gtf_entry(line) {
+        if let Some(segment) = parse_gtf_entry(&line) {
+            if segment.segment_type == SegmentType::Exon {
+                exon_count += 1;
+            }
             segments.push(segment);
         }
         i += 1;
     }
-    info!("finished parsing {}, found {} segments", path, segments.len());
+    info!("finished parsing {}, found {} segments, {} exons", path, segments.len(), exon_count);
     Ok(segments)
 }
 

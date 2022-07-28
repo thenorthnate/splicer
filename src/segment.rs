@@ -2,7 +2,13 @@
 //!
 //! Defines any contiguous segment of nucleotides
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
+pub enum Strand {
+    Forward,
+    Reverse,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum SegmentType {
     CDS,
     Exon,
