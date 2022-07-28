@@ -1,7 +1,8 @@
-use log::{debug, error, log_enabled, info, Level};
+use log::{error, info};
 use std::env;
 
 mod gtf;
+mod segment;
 mod trie;
 
 fn main() {
@@ -13,9 +14,15 @@ fn main() {
         }
     }
     env_logger::init();
-    info!("Starting");
+    info!("Starting processing");
 
-    let entries = gtf::read_gtk("data/Homo_sapiens.GRCh38.107.gtf").unwrap();
+    let entries = match gtf::read_gtf("data/Homo_sapiens.GRCh38.107.gtf") {
+        Ok(v) => v,
+        Err(e) => {
+            error!("failed to read gtf file due to {}", e);
+            return;
+        }
+    };
     for i in 0..10 {
         println!("{:?}", entries[i]);
     }
