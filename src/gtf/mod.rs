@@ -1,13 +1,19 @@
+//! # GTF
+//!
+//! Annotion file functions and definitions
+
 use log::{
     debug,
     error,
     info,
 };
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::io::{self, BufRead};
 
-use crate::segment::{Segment, SegmentType};
+use crate::elements::segment::{Segment, SegmentType};
+
 
 pub fn read_gtf(path: &str) -> Result<Vec<Segment>, Box<dyn Error>> {
     info!("reading and parsing {}", path);
@@ -26,7 +32,7 @@ pub fn read_gtf(path: &str) -> Result<Vec<Segment>, Box<dyn Error>> {
         if i < 20 {
             println!("{}", line);
         }
-        if let Some(segment) = parse_gtf_entry(&line) {
+        if let Some(segment) = parse_gtf_entry(&line, i) {
             if segment.segment_type == SegmentType::Exon {
                 exon_count += 1;
             }
@@ -38,7 +44,7 @@ pub fn read_gtf(path: &str) -> Result<Vec<Segment>, Box<dyn Error>> {
     Ok(segments)
 }
 
-fn parse_gtf_entry(line: &str) -> Option<Segment> {
+fn parse_gtf_entry(line: &str, line_number: u32) -> Option<Segment> {
     if line.starts_with("#") {
         // This is a comment line!
         debug!("GTF Header: {}", line);
@@ -62,11 +68,10 @@ fn parse_gtf_entry(line: &str) -> Option<Segment> {
     let end = elements[4].parse::<u32>().ok();
     if elements.len() > 8 {
         // parse attributes!
-        // let attribute_str = elements[8].replace("\"", "");
-        // let attributes: Vec<&str> = attribute_str.split(";").collect();
-        // for attr in attributes {
-
-        // }
+        let attr_map = parse_attributes(elements[8]);
+        if line_number < 20 {
+            println!("Attrs: {:?}", attr_map);
+        }
     }
     if let Some(start_val) = start {
         if let Some(end_val) = end {
@@ -76,6 +81,22 @@ fn parse_gtf_entry(line: &str) -> Option<Segment> {
         }
     }
     None
+}
+
+fn parse_attributes(line: &str) -> HashMap<String, String> {
+    let attribute_str = line.replace("\"", "");
+    let attributes: Vec<&str> = attribute_str.split(";").collect();
+    let mut attr_map = HashMap::new();
+    for attr in attributes {
+        let cleaned_attr = attr.strip_prefix(" ");
+        if let Some(cleaned) = cleaned_attr {
+            let attr_parts: Vec<&str> = cleaned.split(" ").collect();
+            if attr_parts.len() == 2 {
+                attr_map.insert(attr_parts[0].replace(" ", "").to_owned(), attr_parts[1].replace(" ", "").to_owned());
+            }
+        }
+    }
+    attr_map
 }
 
 // ["1", "ensembl_havana", "exon", "1471765", "1472089", ".", "+", ".", "gene_id \"ENSG00000160072\"; gene_version \"20\"; transcript_id \"ENST00000673477\"; transcript_version \"1\"; exon_number \"1\"; gene_name \"ATAD3B\"; gene_source \"ensembl_havana\"; gene_biotype \"protein_coding\"; transcript_name \"ATAD3B-206\"; transcript_source \"ensembl_havana\"; transcript_biotype \"protein_coding\"; tag \"CCDS\"; ccds_id \"CCDS30\"; exon_id \"ENSE00003889014\"; exon_version \"1\"; tag \"basic\";"]

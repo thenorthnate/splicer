@@ -1,8 +1,8 @@
 use log::{error, info};
 use std::env;
 
+mod elements;
 mod gtf;
-mod segment;
 mod trie;
 
 fn main() {
