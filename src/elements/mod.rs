@@ -3,8 +3,8 @@
 //! Various components in a genetic sequence
 
 pub mod gene;
+pub mod region;
 pub mod segment;
-pub mod sequence;
 pub mod transcript;
 
 #[derive(Debug, PartialEq)]

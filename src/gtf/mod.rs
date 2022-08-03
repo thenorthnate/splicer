@@ -12,6 +12,7 @@ use std::error::Error;
 use std::fs;
 use std::io::{self, BufRead};
 
+use crate::curator::Curator;
 use crate::elements::segment::{Segment, SegmentType};
 
 
@@ -29,7 +30,7 @@ pub fn read_gtf(path: &str) -> Result<Vec<Segment>, Box<dyn Error>> {
                 continue;
             }
         };
-        if i < 20 {
+        if i < 10 {
             println!("{}", line);
         }
         if let Some(segment) = parse_gtf_entry(&line, i) {

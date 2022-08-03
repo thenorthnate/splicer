@@ -1,6 +1,7 @@
 use log::{error, info};
 use std::env;
 
+mod curator;
 mod elements;
 mod gtf;
 mod trie;

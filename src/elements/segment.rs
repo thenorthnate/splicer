@@ -29,6 +29,7 @@ pub struct Segment {
     pub frame: Option<u8>,
     pub id: Option<String>,
     pub index: Option<u32>,
+    /// Maps all the known transitions to the number of times that transition has occurred
     pub next: HashMap<u32, u32>,
     /// score - A floating point value.
     pub score: Option<f32>,
